@@ -69,8 +69,9 @@ class MediaManager extends Extension
         $disk = static::config('disk');
 
         $this->storage = Storage::disk($disk);
+        $isLocal = config('filesystems.disks.' . $disk . '.driver') === 'local';
 
-        if (!$this->storage->getDriver()->getAdapter() instanceof Local) {
+        if (!$isLocal) {
             Handler::error('Error', '[laravel-admin-ext/media-manager] only works for local storage.');
         }
     }
@@ -103,7 +104,7 @@ class MediaManager extends Extension
      */
     protected function getFullPath($path)
     {
-        $fullPath = $this->storage->getDriver()->getAdapter()->applyPathPrefix($path);
+        $fullPath = $this->storage->path($path); // This handles the prefix
         if (strstr($fullPath, '..')) {
             throw new \Exception('Incorrect path');
         }
